@@ -19,8 +19,8 @@ def load_lists(filename):
 
 def calculate_sum(list_a, list_b):
     list_sum = 0
-    for i in range(len(list_a)):
-        list_sum += abs(list_a[i] - list_b[i])
+    for a, b in zip(list_a, list_b):
+        list_sum += abs(a - b)
 
     return list_sum
 
