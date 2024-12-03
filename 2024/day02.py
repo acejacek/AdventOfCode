@@ -1,23 +1,19 @@
-def increasing(numbers):
+def testing(numbers, test):
     for i in range(len(numbers) - 1):
-        if numbers[i] >= numbers[i + 1]:
+        if test(numbers[i], numbers[i + 1]):
             return False
 
-    return True;
+    return True
+
+def increasing(numbers):
+    return testing(numbers, lambda a, b: a >= b)
 
 def decreasing(numbers):
-    for i in range(len(numbers) - 1):
-        if numbers[i] <= numbers[i + 1]:
-            return False
-
-    return True;
+    return testing(numbers, lambda a, b: a <= b)
 
 def good_levels(numbers):
-    for i in range(len(numbers) - 1):
-        if abs(numbers[i] - numbers[i + 1]) > 3:
-            return False
-
-    return True;
+    test = lambda a, b: abs(a - b) > 3
+    return testing(numbers, test)
 
 def is_safe(numbers):
     return (increasing(numbers) or \
