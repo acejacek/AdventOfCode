@@ -25,7 +25,7 @@ def createPages(lines):
 
 def pageIsCorrect(page, checklist):
     for check in checklist:
-        if (check[0] in page) and (check[1] in page):
+        if (check[0] in page) and (check[1] in page):  # this check applies
             if page.index(check[0]) > page.index(check[1]):
                 return False  # this pages order is damaged
 
@@ -35,21 +35,6 @@ def pageIsCorrect(page, checklist):
 def returnMiddlePages(page):
     i = len(page) // 2   # middle element. no modulo, rows are odd in size
     return page[i]
-
-
-def calculate_part1(filename):
-    with open(filename, "r") as file:
-        lines = file.readlines()
-
-    manual = createPages(lines)
-    checklist = createChecklist(lines)
-    sumOfPages = 0
-
-    for page in manual:
-        if pageIsCorrect(page, checklist):
-            sumOfPages += returnMiddlePages(page)
-
-    return sumOfPages
 
 
 def fixWrongPage(page, checklist):
@@ -62,20 +47,10 @@ def fixWrongPage(page, checklist):
                 i2 = page.index(check[1])
                 if i1 > i2:
                     page[i1], page[i2] = page[i2], page[i1] # swap
-                    page = fixWrongPage(page, checklist) # recurrence
-
-    return page
+                    fixWrongPage(page, checklist) # recurrence
 
 
-def filterWrongPage(page, checklist):
-    if pageIsCorrect(page, checklist):
-        return 0 # page is already OK, nothing to do here, ignore this one
-
-    fixed = fixWrongPage(page, checklist)
-    return returnMiddlePages(fixed)
-
-
-def calculate_part2(filename):
+def calculate(filename, part = 1):
     with open(filename, "r") as file:
         lines = file.readlines()
 
@@ -84,13 +59,18 @@ def calculate_part2(filename):
     sumOfPages = 0
 
     for page in manual:
-        sumOfPages += filterWrongPage(page, checklist)
+        if part == 1 and pageIsCorrect(page, checklist):
+            sumOfPages += returnMiddlePages(page)
+
+        if part == 2 and not pageIsCorrect(page, checklist):
+            fixWrongPage(page, checklist)
+            sumOfPages += returnMiddlePages(page)
 
     return sumOfPages
 
 
-assert calculate_part1("day05.test") == 143
-print("Part 1:", calculate_part1("day05.txt"))
+assert calculate("day05.test") == 143
+print("Part 1:", calculate("day05.txt"))
 
-assert calculate_part2("day05.test") == 123
-print("Part 2:", calculate_part2("day05.txt"))
+assert calculate("day05.test", part = 2) == 123
+print("Part 2:", calculate("day05.txt", part = 2))
