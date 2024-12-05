@@ -11,16 +11,13 @@ def createChecklist(lines):
 
 
 def createPages(lines):
-    pages = []
     ignore = True   # ignore everything until empty line
 
     for line in lines:
         if not ignore:
-            pages.append([int(s) for s in line.rstrip().split(",")])
+            yield [int(s) for s in line.rstrip().split(",")]
         if line == "\n":
             ignore = False
-
-    return pages
 
 
 def pageIsCorrect(page, checklist):
