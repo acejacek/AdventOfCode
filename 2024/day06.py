@@ -27,15 +27,14 @@ class Part1:
 
     def reset(self):
         """bring all to initial stage"""
-        self.visited = []
+        self.visited = set()
         self.x = self.startx 
         self.y = self.starty
         self.direction = Direction.NORTH
 
     def visit(self):
         """add location to visited locations, skip duplicates"""
-        if (self.x, self.y) not in self.visited:
-            self.visited.append((self.x, self.y))
+        self.visited.add((self.x, self.y))
 
     def print(self):
         """show maze"""
@@ -136,7 +135,7 @@ class Part2(Part1):
             self.isLoop = True
             return
 
-        self.visited.append(trace)
+        self.visited.add(trace)
 
     def peek(self, x, y):
         """look into location, consider obstacles as #. 0 if outsde maze"""
