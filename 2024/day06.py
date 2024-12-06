@@ -159,12 +159,11 @@ class Part2(Part1):
 
     def iterateWalks(self):
         """do walks iterating through all possible obstacles"""
-        obstacles = []
+        obstacles = set()
         self.walk() # do the initial walk to get all possible locations
         # it does not make sense to put obstacles anywhere outside initial walk
         for (x, y, _) in self.visited:
-            if (x, y) not in obstacles:
-                obstacles.append((x, y))
+            obstacles.add((x, y))
 
         loops = 0
         for obstacle in obstacles:
