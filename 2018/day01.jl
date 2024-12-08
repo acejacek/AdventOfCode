@@ -2,8 +2,8 @@
 function calculate()
     prev = Set()
     freq = 0
+    a = parse.(Int, readlines("day01.txt"))
     while true
-        a = parse.(Int, readlines("day01.txt"))
         for f in a
             if freq in prev
                 return freq
