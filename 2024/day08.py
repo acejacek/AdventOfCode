@@ -8,24 +8,27 @@ def calculate(filename, part = 1):
                 locations += ([complex(x, y) for x, loc in enumerate(line) if loc == f])
         return locations
                 
+    def inBounds(anti):
+        return anti.real >= 0 and anti.real < w and anti.imag >= 0 and anti.imag < h
+
     def findAntinode(a, b):
         if a != b:
             # calculate delta
             delta = a - b
             # antinode position of A due to interference with B
-            newA = a + delta
-            if newA.real >= 0 and newA.real < w and newA.imag >= 0 and newA.imag < h:
-                return newA
+            anti = a + delta
+            if inBounds(anti):
+                return anti
 
     def findAntinodeWithHarmonics(a, b):
         nodes = []
         if a != b:
             delta = a - b
             # generate antinodes at antenna and every delta until out of bounds
-            newA = a
-            while newA.real >= 0 and newA.real < w and newA.imag >= 0 and newA.imag < h:
-                nodes += [newA]
-                newA += delta
+            anti = a
+            while inBounds(anti):
+                nodes += [anti]
+                anti += delta
         return nodes
 
     with open(filename, "r") as file:
@@ -49,8 +52,8 @@ def calculate(filename, part = 1):
             if part == 1:
                 antinodes.add(findAntinode(source, other))
             if part == 2:
-                for node in findAntinodeWithHarmonics(source, other):
-                    antinodes.add(node)
+                for anti in findAntinodeWithHarmonics(source, other):
+                    antinodes.add(anti)
 
     antinodes.discard(None)
     return len(antinodes)
