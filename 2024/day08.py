@@ -1,41 +1,32 @@
-
+#!/usr/bin/env python3
 def calculate(filename, part = 1):
 
     def findFreq(f):
-        y = 0
         locations = []
-        for line in lines:
+        for y, line in enumerate(lines):
             if f in line:
-                locations += ([(x, y) for x, loc in enumerate(line) if loc == f])
-            y += 1
+                locations += ([complex(x, y) for x, loc in enumerate(line) if loc == f])
         return locations
                 
     def findAntinode(a, b):
         if a != b:
-            dx = a[0] - b[0]
-            dy = a[1] - b[1]
-            newAx = a[0] + dx
-            newAy = a[1] + dy
-            if newAx >= 0 and newAx < w and newAy >= 0 and newAy < h:
-                return (newAx, newAy)
-        return
+            # calculate delta
+            delta = a - b
+            # antinode position of A due to interference with B
+            newA = a + delta
+            if newA.real >= 0 and newA.real < w and newA.imag >= 0 and newA.imag < h:
+                return newA
 
     def findAntinodeWithHarmonics(a, b):
         nodes = []
         if a != b:
-            dx = a[0] - b[0]
-            dy = a[1] - b[1]
-
-            newAx = a[0]
-            newAy = a[1]
-
-            while newAx >= 0 and newAx < w and newAy >= 0 and newAy < h:
-                nodes += [(newAx, newAy)]
-                newAx += dx
-                newAy += dy
-
+            delta = a - b
+            # generate antinodes at antenna and every delta until out of bounds
+            newA = a
+            while newA.real >= 0 and newA.real < w and newA.imag >= 0 and newA.imag < h:
+                nodes += [newA]
+                newA += delta
         return nodes
-
 
     with open(filename, "r") as file:
         lines = file.readlines()
@@ -43,25 +34,22 @@ def calculate(filename, part = 1):
     w = len(lines[0]) - 1
     h = len(lines)
     antinodes = set()
-    """
-    findAntinodeWithHarmonics((1,2),(0,0))
-    findAntinodeWithHarmonics((3,1),(0,0))
-    findAntinodeWithHarmonics((3,1),(1,2))
-    exit()
-    """
-    y = 0
-    antenas = []
-    for line in lines:
-        antenas += [(x, y, ant) for x, ant in enumerate(line) if (ant != "." and ant != "\n")]
-        y += 1
+    antennas = []
 
-    for antena in antenas:
-        others = findFreq(antena[2])
+    # where are antennas?
+    for y, line in enumerate(lines):
+        antennas += [(x, y, ant) for x, ant in enumerate(line) if (ant != "." and ant != "\n")]
+
+    for antenna in antennas:
+        source = complex(antenna[0], antenna[1])
+        # generate list of same frequency antennas
+        others = findFreq(antenna[2])
+        # find antinodes and add to the set
         for other in others:
             if part == 1:
-                antinodes.add(findAntinode((antena[0], antena[1]), other))
+                antinodes.add(findAntinode(source, other))
             if part == 2:
-                for node in findAntinodeWithHarmonics((antena[0], antena[1]), other):
+                for node in findAntinodeWithHarmonics(source, other):
                     antinodes.add(node)
 
     antinodes.discard(None)
