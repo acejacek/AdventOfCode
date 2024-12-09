@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-from collections import deque
-
-def buildQ(raw):
+def buildList(raw):
     q = []
     fileID = 0
     for i, val in enumerate(raw):
@@ -14,36 +12,54 @@ def buildQ(raw):
 
     return q
 
-def compresQ(queue):
+"""
+This proc has potential bug. can lead to censequent locations with free spaces,
+which are never merged into one chink of free space. Howewer, it works
+flawlesly with my data
+"""
+def compressList(fileList):
+    """simple insertion"""
     done = False
     while not done:
         done = True
         try:
-            for k, file in reversed(list(enumerate(queue))):
+            # walking from back, find a file
+            for k, file in reversed(list(enumerate(fileList))):
                 if file[0] != ".":
-                    for i, loc in enumerate(queue):
-                        if i < k:
-                            if loc[0] == "." and loc[1] >= file[1]:
-                                done = False
-                                left = loc[1] - file[1]
-                                queue[i] = (file[0], file[1])
-                                queue[k] = (".", file[1])
-                                if left > 0:
-                                    queue.insert(i+1, (".", left))
+                    # now walking form front find space for it
+                    for i, loc in enumerate(fileList):
+                        # make sure free space is before file location
+                        if i < k and loc[0] == "." and loc[1] >= file[1]:
+                            # how much space left after file will be moved here
+                            left = loc[1] - file[1]
+                            # do the swap
+                            fileList[i] = (file[0], file[1])
+                            fileList[k] = (".", file[1])
+                            done = False
+                            if left > 0:
+                                # don't forget to insert free space, if any
+                                # remains
+                                fileList.insert(i + 1, (".", left))
+                                # now I need to leave both "for" loops, because
+                                # order of files changed
                                 raise(StopIteration)
+                            # replacement done, go for next file
+                            break
         except StopIteration:
             pass
 
-    return queue
+    return fileList
 
-def serialize(queue):
+def serialize(fileList):
+    """translate fileList to form readeable by checksum() from part 1"""
     diskblock = []
-    for (val, l) in queue:
+    for (val, l) in fileList:
         diskblock.extend([val] * l)
 
     return diskblock
 
 def decompress(diskmap):
+    """translate diskmap to file layout"""
     diskblock = []
     fileID = 0
 
@@ -57,18 +73,22 @@ def decompress(diskmap):
     return diskblock
 
 def compactBlocks(diskblock):
+    """fond first free spot and bring last file into this space"""
+    # keep track on position of last file in diskblocks
+    lastIndex = len(diskblock) - 1 
     for i, val in enumerate(diskblock):
         if val == ".":
-            for j in range(len(diskblock) - 1 , i, -1):
+            for j in range(lastIndex , i, -1):
                 if diskblock[j] != ".":
                     diskblock[i] = diskblock[j]
                     diskblock[j] = "."
+                    lastIndex = j - 1 # no need to scan all blocks next time
                     break
 
-    return(diskblock)
-
+    return diskblock
 
 def checksum(diskblock):
+    """calculate checkum from flat list of files"""
     return sum([ i * val for i, val in enumerate(diskblock) if val != "." ])
 
 def load(filename):
@@ -80,21 +100,20 @@ def load(filename):
 
 assert checksum(compactBlocks(decompress(load("day09.test")))) == 1928
 
-
 raw = load("day09.txt")
 disk = decompress(raw)
 compact = compactBlocks(disk)
 print("Part 1:", checksum(compact))
 
 raw = load("day09.test")
-queue = buildQ(raw)
-compressed = compresQ(queue)
+fileList = buildList(raw)
+compressed = compressList(fileList)
 serial = serialize(compressed)
 assert checksum(serial) == 2858
 
 raw = load("day09.txt")
-queue = buildQ(raw)
-compressed = compresQ(queue)
-serial = serialize(compressed)
-print("Part 2:", checksum(serial))
+fileList = buildList(raw)
+compressed = compressList(fileList)
+compact = serialize(compressed)
+print("Part 2:", checksum(compact))
 
