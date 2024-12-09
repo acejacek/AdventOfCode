@@ -24,13 +24,9 @@ def compactBlocks(diskblock):
 
     return(diskblock)
 
-def checksum(diskblock):
-    checkValue = 0
-    for i, val in enumerate(diskblock):
-        if val != ".":
-            checkValue += i * val
 
-    return checkValue
+def checksum(diskblock):
+    return sum([ i * val for i, val in enumerate(diskblock) if val != "." ])
 
 def load(filename):
     with open(filename, "r") as file:
@@ -39,10 +35,7 @@ def load(filename):
     return [int(elem) for elem in lines[0] if elem != "\n"]
 
 
-raw = load("day09.test")
-disk = decompress(raw)
-compact = compactBlocks(disk)
-print(checksum(compact))
+assert checksum(compactBlocks(decompress(load("day09.test")))) == 1928
 
 raw = load("day09.txt")
 disk = decompress(raw)
