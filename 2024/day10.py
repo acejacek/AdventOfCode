@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
-def calculate1(filename):
+def calculate(filename, part = 1):
 
     visited = set()
-    
+    possible = []
+
     def peek(x, y):
         if x >=0 and x < w and y >= 0 and y < h:
-            return eval(lines[y][x])
+            if lines[y][x] != ".":
+                return eval(lines[y][x])
 
         return -1
 
@@ -15,7 +17,11 @@ def calculate1(filename):
         step += 1
 
         if myHeight == 9:
-            visited.add(((x,y), step))
+            if part == 1:
+                visited.add(((x,y), step))
+            else:
+                nonlocal possible
+                possible += [1]
             return
 
         if peek(x - 1, y) == myHeight + 1:
@@ -41,17 +47,27 @@ def calculate1(filename):
 
     for y, line in enumerate(lines):
         for x, height in enumerate(line):
-            if height == '\n':
+            if height == '\n' or height == '.':
                 continue
             if int(height) == 0:
                 walk(x, y, 0)
-                score += len(visited)
-                visited = set()
+                if part == 1:
+                    # for part 1 use set, to eliminate duplicates
+                    score += len(visited)
+                    visited = set()
+                if part == 2:
+                    # here use list, to catch all possible trails
+                    score += len(possible)
+                    possible = []
                  
     return score
 
-a = calculate1("day10.test")
-assert a == 36, "Error in score calculation"
-
-a = calculate1("day10.txt")
+assert calculate("day10.test") == 36, "Error in score calculation"
+a = calculate("day10.txt")
 print("Part 1:", a)
+
+assert calculate("day10.test2", part = 2) == 13
+assert calculate("day10.test3", part = 2) == 227
+
+a = calculate("day10.txt", part = 2)
+print("Part 2:", a)
