@@ -12,29 +12,28 @@ def calculate(filename, part = 1):
 
         return -1
 
-    def walk(x, y, step):
+    def walk(x, y):
         myHeight = peek(x, y)
-        step += 1
 
         if myHeight == 9:
             if part == 1:
-                visited.add(((x,y), step))
+                visited.add((x,y))
             else:
                 nonlocal possible
                 possible += [1]
             return
 
         if peek(x - 1, y) == myHeight + 1:
-            walk(x - 1, y, step)
+            walk(x - 1, y)
 
         if peek(x + 1, y) == myHeight + 1:
-            walk(x + 1, y, step)
+            walk(x + 1, y)
         
         if peek(x, y - 1) == myHeight + 1:
-            walk(x, y - 1, step)
+            walk(x, y - 1)
 
         if peek(x, y + 1) == myHeight + 1:
-            walk(x, y + 1, step)
+            walk(x, y + 1)
 
         return
 
@@ -47,10 +46,10 @@ def calculate(filename, part = 1):
 
     for y, line in enumerate(lines):
         for x, height in enumerate(line):
-            if height == '\n' or height == '.':
+            if not height.isdigit():
                 continue
             if int(height) == 0:
-                walk(x, y, 0)
+                walk(x, y)
                 if part == 1:
                     # for part 1 use set, to eliminate duplicates
                     score += len(visited)
