@@ -63,32 +63,42 @@ def calculate(filename):
         sides = 0
         aPrev = bPrev = ('\0', '\0')
         for y in range(h + 1):
+            lineInProgress = False
             for x in range(w):
                 a = betterPeek(x, y)
                 b = betterPeek(x, y - 1)
-                if (a != aPrev or b != bPrev):
-                    if a != b:
-                        if a[1] == plantID or b[1] == plantID:
-                            sides += 1
+                if lineInProgress == False:
+                    if (a != aPrev or b != bPrev):
+                        if a != b:
+                            if a[1] == plantID or b[1] == plantID:
+                                sides += 1
+                                lineInProgress = True
+                else:
+                    lineInProgress = not (a[1] == b[1] == plantID)
 
                 aPrev = a
                 bPrev = b
-
+        print("horiz:", sides)
         # scan vertically
         aPrev = bPrev = ('\0', '\0')
         for x in range(w + 1):
+            lineInProgress = False
             for y in range(h):
                 a = betterPeek(x, y)
                 b = betterPeek(x - 1, y)
-                if (a != aPrev or b != bPrev):
-                    if a != b:
-                        if a[1] == plantID or b[1] == plantID:
-                            print("plant: ", a[0], b[0])
-                            sides += 1
+                if lineInProgress == False:
+                    if (a != aPrev or b != bPrev):
+                        if a != b:
+                            if a[1] == plantID or b[1] == plantID:
+                                sides += 1
+                                lineInProgress = True
+                else:
+                    lineInProgress = not (a[1] == b[1] == plantID)
 
                 aPrev = a
                 bPrev = b
 
+        print("vert:", sides)
         return sides
 
     garden = []
@@ -104,16 +114,18 @@ def calculate(filename):
         for x, height in enumerate(garden):
             visit(x, y)
     
+#    print(plots)
+    sides = 1
     price = sum([area * fence for area, fence in plots.values()])
+    print([(countSides(areaID), area, countSides(areaID) * area) for (areaID, (area, _)) in plots.items()])
 
-    for area in plots:
-        print(plots[area])
-        print(countSides(area))
 
-    return price
+#    sides = sum([countSides(areaID) * (area) for (areaID, (area, _)) in plots.items()])
+
+    return (price, sides)
 
 #assert calculate("day12.test") == 1930
 #a = calculate("day12.txt")
 #print("Part 1:", a)
 
-print(calculate("day12.test2"))
+print(calculate("day12.test3"))
