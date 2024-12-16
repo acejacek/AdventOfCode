@@ -11,6 +11,8 @@ class Reindeer:
         self.score = 0
         self.bestscore = 0
         self.freeWay = freeWay
+        self.path = []
+        self.bestpath = []
 
     def N(self):
         return (self.pos[0], self.pos[1] - 1)
@@ -24,43 +26,53 @@ class Reindeer:
     def look(self):
         exits = []
         if  self.N() in self.freeWay:
-                if self.freeWay[self.N()] == 0 or self.freeWay[self.N()] > self.score:
-                    exits += [("N", self.N())]
+            exits += [("N", self.N())]
         if  self.E() in self.freeWay:
-                if self.freeWay[self.E()] == 0 or self.freeWay[self.E()] > self.score:
-                    exits += [("E", self.E())]
+            exits += [("E", self.E())]
         if  self.S() in self.freeWay:
-                if self.freeWay[self.S()] == 0 or self.freeWay[self.S()] > self.score:
-                    exits += [("S", self.S())]
+            exits += [("S", self.S())]
         if  self.W() in self.freeWay:
-                if self.freeWay[self.W()] == 0 or self.freeWay[self.W()] > self.score:
-                    exits += [("W", self.W())]
+            exits += [("W", self.W())]
         return exits
 
     def walk(self, pos):
         if self.bestscore != 0 and self.score >= self.bestscore:
             return
 
+        self.path.append(pos) 
+
         if pos == self.finish:
             if self.bestscore == 0 or self.bestscore >= self.score:
-                self.bestscore = self.score
-            return
+                if self.bestscore > self.score or self.bestscore == 0:
+                    self.bestscore = self.score
+                    self.bestpath = [self.path.copy()]
+                else:
+                    self.bestpath += [self.path.copy()]
+        else:
+            self.pos = pos
+            exits = self.look()
+            self.freeWay[pos] = self.score
+            # turn is required, I upgrade this area in extra penalty
+            if self.dir not in exits:
+                self.freeWay[pos] += 1000
+            for e in exits:
+                if e[0] != self.dir:
+                    if self.freeWay[e[1]] >= self.score + 1001 \
+                            or self.freeWay[e[1]] == 0:
+                        self.score += 1001
+                        prevDir = self.dir
+                        self.dir = e[0]
+                        self.walk(e[1])
+                        self.score -= 1001
+                        self.dir = prevDir
+                else:
+                    if self.freeWay[e[1]] >= self.score + 1 \
+                            or self.freeWay[e[1]] == 0:
+                        self.score += 1
+                        self.walk(e[1])
+                        self.score -= 1
 
-        self.freeWay[pos] = self.score
-        self.pos = pos
-        exits = self.look()
-        for e in exits:
-            if e[0] != self.dir:
-                self.score += 1001
-                prevDir = self.dir
-                self.dir = e[0]
-                self.walk(e[1])
-                self.score -= 1001
-                self.dir = prevDir
-            else:
-                self.score += 1
-                self.walk(e[1])
-                self.score -= 1
+        self.path.pop()
 
 
 def calculate(filename, part = 1):
@@ -83,8 +95,12 @@ def calculate(filename, part = 1):
     r = Reindeer(finish, freeWay)
 
     r.walk(start)
-    print(r.bestscore)
+    print("Part 1:", r.bestscore)
+    if part == 2:
+        #        print(r.bestpath)
+        print(len({loc for path in r.bestpath for loc in path}))
 
-a = calculate("day16.test")
-a = calculate("day16.test2")
-a = calculate("day16.txt")
+a = calculate("day16.test3", part = 2)
+a = calculate("day16.test", 2)
+a = calculate("day16.test2", 2)
+# a = calculate("day16.txt")
