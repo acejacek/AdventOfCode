@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 
-import sys
-
-sys.setrecursionlimit(10000)
+#import sys
+#sys.setrecursionlimit(10000)
 
 class Reindeer:
 
     def __init__(self, finish, freeWay):
-       # self.pos = pos
         self.finish = finish
         self.dir = "E"
-        self.visited = set()
         self.score = 0
         self.bestscore = 0
         self.freeWay = freeWay
@@ -26,16 +23,6 @@ class Reindeer:
 
     def look(self):
         exits = []
-        """
-        if  self.N() not in walls and self.N() not in self.visited:
-            exits += [("N", self.N())]
-        if  self.E() not in walls and self.E() not in self.visited:
-            exits += [("E", self.E())]
-        if  self.S() not in walls and self.S() not in self.visited:
-            exits += [("S", self.S())]
-        if  self.W() not in walls and self.W() not in self.visited:
-            exits += [("W", self.W())]
-        """
         if  self.N() in self.freeWay:
                 if self.freeWay[self.N()] == 0 or self.freeWay[self.N()] > self.score:
                     exits += [("N", self.N())]
@@ -48,12 +35,12 @@ class Reindeer:
         if  self.W() in self.freeWay:
                 if self.freeWay[self.W()] == 0 or self.freeWay[self.W()] > self.score:
                     exits += [("W", self.W())]
-
         return exits
 
-    def walk(self, pos, rec = 1):
-        if self.bestscore != 0 and self.score == self.bestscore:
+    def walk(self, pos):
+        if self.bestscore != 0 and self.score >= self.bestscore:
             return
+
         if pos == self.finish:
             if self.bestscore == 0 or self.bestscore >= self.score:
                 self.bestscore = self.score
@@ -61,24 +48,19 @@ class Reindeer:
 
         self.freeWay[pos] = self.score
         self.pos = pos
-        # self.visited.add(pos)
         exits = self.look()
-        if len(exits) != 0:
-            for e in exits:
-                #print("at:",pos,"sc:",self.score, "go:",e, freeWay[e[1]])
-                #input()
-                scoreInc = 1
-                if e[0] != self.dir:
-                    scoreInc = 1001
-
-                self.score += scoreInc
+        for e in exits:
+            if e[0] != self.dir:
+                self.score += 1001
                 prevDir = self.dir
                 self.dir = e[0]
                 self.walk(e[1])
-                self.score -= scoreInc
+                self.score -= 1001
                 self.dir = prevDir
-
-        #self.visited.remove(pos)
+            else:
+                self.score += 1
+                self.walk(e[1])
+                self.score -= 1
 
 
 def calculate(filename, part = 1):
