@@ -24,17 +24,13 @@ class Reindeer:
     def look(self):
         exits = []
         if  self.N() in self.freeWay:
-                if self.freeWay[self.N()] == 0 or self.freeWay[self.N()] > self.score:
-                    exits += [("N", self.N())]
+            exits += [("N", self.N())]
         if  self.E() in self.freeWay:
-                if self.freeWay[self.E()] == 0 or self.freeWay[self.E()] > self.score:
-                    exits += [("E", self.E())]
+            exits += [("E", self.E())]
         if  self.S() in self.freeWay:
-                if self.freeWay[self.S()] == 0 or self.freeWay[self.S()] > self.score:
-                    exits += [("S", self.S())]
+            exits += [("S", self.S())]
         if  self.W() in self.freeWay:
-                if self.freeWay[self.W()] == 0 or self.freeWay[self.W()] > self.score:
-                    exits += [("W", self.W())]
+            exits += [("W", self.W())]
         return exits
 
     def walk(self, pos):
@@ -51,17 +47,18 @@ class Reindeer:
         exits = self.look()
         for e in exits:
             if e[0] != self.dir:
-                self.score += 1001
-                prevDir = self.dir
-                self.dir = e[0]
-                self.walk(e[1])
-                self.score -= 1001
-                self.dir = prevDir
+                if self.freeWay[e[1]] == 0 or self.freeWay[e[1]] >= self.score + 1001:
+                    self.score += 1001
+                    prevDir = self.dir
+                    self.dir = e[0]
+                    self.walk(e[1])
+                    self.score -= 1001
+                    self.dir = prevDir
             else:
-                self.score += 1
-                self.walk(e[1])
-                self.score -= 1
-
+                if self.freeWay[e[1]] == 0 or self.freeWay[e[1]] >= self.score + 1:
+                    self.score += 1
+                    self.walk(e[1])
+                    self.score -= 1
 
 def calculate(filename, part = 1):
     freeWay = dict()
@@ -85,6 +82,7 @@ def calculate(filename, part = 1):
     r.walk(start)
     print(r.bestscore)
 
-a = calculate("day16.test")
-a = calculate("day16.test2")
-a = calculate("day16.txt")
+a = calculate("day16.test3")
+#a = calculate("day16.test")
+#a = calculate("day16.test2")
+#a = calculate("day16.txt")
