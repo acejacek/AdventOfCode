@@ -48,13 +48,12 @@ maximum = 3451
 
 while True:
     f = (maximum - minimum) // 2 + minimum
-    (a, b) = calc("day18.txt", finish, f)
+    a, b = calc("day18.txt", finish, f)
     if a == float("inf"):
         if minimum == f - 1:
-            print("Part 2:", f, b)
+            print("Part 2:", b)
             break
         maximum = f
     else:
         minimum = f
-    
 
