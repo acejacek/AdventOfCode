@@ -15,7 +15,7 @@ class BigKeypad:
             totalSignal += "A"
         return totalSignal
 
-    def press(self, c):
+    def press(self, c, prev = "<"):
         x, y = self.k[c]
         origX = self.x
         origY = self.y
@@ -89,3 +89,25 @@ for code in codes:
     score += int(code[0:3]) * len(final)
 
 print("Part 1:", score)
+
+
+score = 0
+for code in codes:
+
+    numeric = BigKeypad()
+    robots = [SmallKeypad() for i in range(22)]
+    myKeyboard = SmallKeypad()
+
+    codePrev = numeric.code(code)
+
+    for robot in robots:
+        code_r = robot.code(codePrev)
+        codePrev = code_r
+
+    final = myKeyboard.code(codePrev)
+#    print(final)
+#    print(len(final))
+
+    score += int(code[0:3]) * len(final)
+
+print("Part 2:", score)
