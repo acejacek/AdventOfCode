@@ -31,7 +31,38 @@ def calc(filename):
 
     return total
 
-assert calc("day22.test") == 37327623
+def calc2(filename):
 
-a = calc("day22.txt")
-print("Part 1:", a)
+    buyers = []
+
+    with open(filename, "r") as file:
+        while line := file.readline():
+            secret = int(line)
+            prices = [secret % 10]
+            for i in range(2000):
+                secret = calculateNext(secret)
+                prices += [secret % 10]
+            buyers += [prices]
+
+    print(buyers)
+
+    for buyer in buyers:
+        changes = []
+        matches = []
+        for i, price in enumerate(buyer):
+            if i > 0:
+                changes += [price - buyer[i - 1]]
+        for i, change in enumerate(changes):
+            if i < len(changes) - 4:
+                matches += [[(changes[i], changes[i + 1], changes[i + 2], changes[i + 3]), buyer[i + 4]]]
+
+        for match in matches:
+            if match[0] == (-2, 1, -1, 3):
+                print(match)
+
+
+#assert calc("day22.test") == 37327623
+#a = calc("day22.txt")
+#print("Part 1:", a)
+
+calc2("day22.test2")
