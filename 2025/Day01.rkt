@@ -32,27 +32,39 @@
 
 
 (define (process-list-2 lst wheel-pos at-zero-counter)
-  
-  (define (inc-wheel cl)
+
+  (define (new-wheel-pos cl)
     (modulo (+ wheel-pos cl) 100))
-  (define (dec-wheel cl)
-    (inc-wheel (- cl)))
 
-  (define (at-zero? wheel-pos)
-    (if (zero? wheel-pos)
-        (+ at-zero-counter 1)
-        at-zero-counter))
+  (define (count-zero clicks pos)
+    (define (iter clicks pos counter)
+     
+      (define (at-zero? pos)
+        (if (zero? pos)
+            (+ counter 1)
+            counter))
 
-  (define (passing-zero? rot)
-    (quotient rot 100))
+      (define (new-pos pos d)
+        (modulo (+ pos d) 100))
+      
+      (cond
+        [(< 0 clicks) (iter (- clicks 1) (new-pos pos 1) (at-zero? (new-pos pos 1)))]
+        [(> 0 clicks) (iter (+ clicks 1) (new-pos pos (- 1)) (at-zero? (new-pos pos (- 1))))]
+        [else counter]))
+          
+    (iter clicks pos 0))
 
   (if (empty? lst)
       at-zero-counter
-      (if (string=? "L" (substring (car lst) 0 1))
-          (process-list-2 (cdr lst) (dec-wheel (string->number (substring (car lst) 1))) (at-zero? wheel-pos))
-          (process-list-2 (cdr lst) (inc-wheel (string->number (substring (car lst) 1))) (at-zero? wheel-pos)))))
+      (let()
+        (define clicks (string->number (substring (car lst) 1)))
+        (if (string=? "L" (substring (car lst) 0 1))
+          (process-list-2 (cdr lst) (new-wheel-pos clicks) (count-zero clicks wheel-pos))
+          (process-list-2 (cdr lst) (new-wheel-pos (- clicks)) (count-zero (- clicks) wheel-pos))))))
 
 ; assert
-(if (= 6 (process-list-2 test_input 50 0))
+
+(define part-2 (process-list-2 test_input 50 0))
+(if (= 6 part-2)
     (process-list-2 input 50 0)
-    (error "Wrong!"))
+    (error (number->string part-2)))
