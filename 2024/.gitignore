@@ -14,3 +14,5 @@ pyproject.toml
 requirements-dev.lock
 requirements.lock
 src/
+
+.swp
