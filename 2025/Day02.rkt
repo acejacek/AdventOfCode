@@ -19,10 +19,8 @@
     
       (cond
         [(> start end) result]
-        [else
-         (if (= left right)
-             (iter (add1 start) end (+ result start))
-             (iter (add1 start) end result))]))
+        [(= left right) (iter (add1 start) end (+ result start))]
+        [else (iter (add1 start) end result)]))
     (iter start end 0))
   
   (define (iterate list sum)
@@ -42,43 +40,40 @@
 (define (process-2 list)
   
   (define (invalid-id? test-number)
-  (define (iterate-options n)
-    (define len
-      (λ (n) (string-length (number->string n))))
-    (define half
-      (λ (l) (quotient (len l) 2)))
-    (define (match-this pattern)
-      (begin
-        (define multiplier (quotient (len test-number) (string-length pattern)))
-        (define expr (string-append "^(" pattern "){" (number->string multiplier) "}$"))
-        (regexp-match-exact? (pregexp expr) (number->string test-number))))
-    (cond
-      [(zero? n) #f]
-      [(and (even? (len n)) (match-this (substring (number->string test-number) 0 (half n)))) #t]
-      [else (iterate-options (quotient n 10))]))
-
-  (iterate-options test-number))
-  
-  (define (generate start end)
-    (define (iter start end result)
+    (define (iterate-options n)
+      (define len
+        (λ (n) (string-length (number->string n))))
+      (define half
+        (λ (l) (quotient (len l) 2)))
+      (define (match-this pattern)
+        (begin
+          (define multiplier (quotient (len test-number) (string-length pattern)))
+          (define expr (string-append "^(" pattern "){" (number->string multiplier) "}$"))
+          (regexp-match-exact? (pregexp expr) (number->string test-number))))
       (cond
-        [(> start end) result]
-        [(invalid-id? start) (iter (add1 start) end (+ result start))]
-        [else (iter (add1 start) end result)]))
-    (iter start end 0))
+        [(zero? n) #f]
+        [(and (even? (len n)) (match-this (substring (number->string test-number) 0 (half n)))) #t]
+        [else (iterate-options (quotient n 10))]))
+
+    (iterate-options test-number))
   
-  (define (iterate list sum)
-    (cond
-      [(empty? list) sum]
-      [else
+  (define (find-invalid list-of-n)
+    (for/fold ([result 0])
+              ([number list-of-n]
+               #:when (invalid-id? number))
+      (+ result number)))
+  
+  (define (iterate list)
+    (for/fold ([sum 0])
+              ([element list])
        (let()
-          (define from (string->number (car (string-split (car list) "-"))))
-          (define to (string->number(car (cdr (string-split (car list) "-")))))
-          (iterate (cdr list) (+ sum (generate from to))))]))
-  (iterate list 0))
+         (define from (string->number (car (string-split element "-"))))
+         (define to (string->number(car (cdr (string-split element "-")))))
+         (+ sum (find-invalid (range from (add1 to)))))))
+
+  (iterate list))
 
 (display "Part 2: ")
-;(process-2 test-input)
 (if (= 4174379265 (process-2 test-input))
     (process-2 input)
     (error "Wrong"))
