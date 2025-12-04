@@ -6,7 +6,7 @@
 
 (define input (string-split (car (file->lines "Day02_input.txt")) ","))
 
-(define (process list)
+(define (process-1 list)
   
   (define (generate start end)
     (define (iter start end result)
@@ -35,7 +35,50 @@
   (iterate list 0))
 
 (display "Part 1: ")
-(if (= 1227775554 (process test-input))
-    (process input)
+(if (= 1227775554 (process-1 test-input))
+    (process-1 input)
     (error "Wrong"))
 
+(define (process-2 list)
+  
+  (define (invalid-id? test-number)
+  (define (iterate-options n)
+    (define len
+      (λ (n) (string-length (number->string n))))
+    (define half
+      (λ (l) (quotient (len l) 2)))
+    (define (match-this pattern)
+      (begin
+        (define multiplier (quotient (len test-number) (string-length pattern)))
+        (define expr (string-append "^(" pattern "){" (number->string multiplier) "}$"))
+        (regexp-match-exact? (pregexp expr) (number->string test-number))))
+    (cond
+      [(zero? n) #f]
+      [(and (even? (len n)) (match-this (substring (number->string test-number) 0 (half n)))) #t]
+      [else (iterate-options (quotient n 10))]))
+
+  (iterate-options test-number))
+  
+  (define (generate start end)
+    (define (iter start end result)
+      (cond
+        [(> start end) result]
+        [(invalid-id? start) (iter (add1 start) end (+ result start))]
+        [else (iter (add1 start) end result)]))
+    (iter start end 0))
+  
+  (define (iterate list sum)
+    (cond
+      [(empty? list) sum]
+      [else
+       (let()
+          (define from (string->number (car (string-split (car list) "-"))))
+          (define to (string->number(car (cdr (string-split (car list) "-")))))
+          (iterate (cdr list) (+ sum (generate from to))))]))
+  (iterate list 0))
+
+(display "Part 2: ")
+;(process-2 test-input)
+(if (= 4174379265 (process-2 test-input))
+    (process-2 input)
+    (error "Wrong"))
