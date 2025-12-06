@@ -18,27 +18,55 @@
         (car ls)
         (max-element (car ls) (max-list (cdr ls)))))
 
-(define (index-of li element) ; rearch for index of element in list li
+(define (index-of li element) ; search for index of element in list li
   (let loop ([lst li]
              [idx 0])
     (cond
       [(equal? (first lst) element) idx]
       [else (loop (rest lst) (add1 idx))])))
 
-(define (max-joltage-1 lst)
+; builds a list of digits of expected length
+(define (build-max ls expect)
+  (cond
+    [(< expect 1) empty]
+    [(empty? ls) empty]
+    [(let*
+         ([max-element (max-list ls)]
+          [max-idx (index-of ls max-element)]
+          [l-ls (take ls max-idx)]
+          [r-ls (if (< max-idx (length ls))
+                    (drop ls (add1 max-idx))
+                    empty)])
+       (append
+        (build-max l-ls (- expect (length r-ls) 1))
+        (list max-element)
+        (build-max r-ls (- expect 1))))]))
+
+; converts '(1 3 8 2) to 1382
+(define (calculate-number lst)
+  (let loop ([ls (reverse lst)]
+             [number 0]
+             [exp 0])
+    (if (empty? ls)
+        number
+        (loop (cdr ls)
+              (+ number (* (car ls) (expt 10 exp)))
+              (add1 exp)))))
+
+(define (max-joltage banks len)
   (for/fold ([joltage 0])
-            ([bank lst])
+            ([bank banks])
     (let*
-      ([list-of-numbers (map (λ(n) (- n 48)) (map char->integer (string->list bank)))] ; convert "123" to '(1 2 3)
-       [max-element-1 (max-list list-of-numbers)]
-       [max-1-idx (index-of list-of-numbers max-element-1)]
-       [right-list (drop list-of-numbers (add1 max-1-idx))])
-      (+ joltage
-         (if (empty? right-list)
-             (+ max-element-1 (* 10 (max-list (take list-of-numbers max-1-idx))))
-             (+ (* 10 max-element-1) (max-list right-list)))))))
-      
-(if (= 357 (max-joltage-1 test))
-    (max-joltage-1 input)
-    (error "Wrong result"))
-    
+      ([list-of-numbers (map (λ(n) (- n 48)) (map char->integer (string->list bank)))]
+       [bank-joltage (calculate-number (build-max list-of-numbers len))])
+      (+ joltage bank-joltage))))
+
+(display "Part 1: ")
+(if (= 357 (max-joltage test 2))
+    (max-joltage input 2)
+    (error "wrong result"))
+
+(display "Part 2: ")
+(if (= 3121910778619 (max-joltage test 12))
+    (max-joltage input 12)
+    (error "wrong result"))
