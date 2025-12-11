@@ -1,5 +1,5 @@
 #lang racket
-(require 2htdp/batch-io)
+(require 2htdp/batch-io rackunit)
 
 (define test-input (list
                     "3-5"
@@ -55,29 +55,79 @@
            0
            ingredients)))
 
-; out of mem, obviously
-(define (count-ingredients-2-naive inp)
+(check-equal? (count-ingredients-1 test-input) 3)
+(display "Part 1: ")
+(count-ingredients-1 input)
+
+(define (scan-ranges l)  ;full list
+  (cond
+    [(empty? l) empty]
+    [else 
+     (define (scan-next rs)
+       (if (empty? rs)
+           l
+           (let* ([r (car rs)]
+                  [l-from (car (car l))]
+                  [l-to (car (cdr (car l)))]
+                  [r-from (car r)]
+                  [r-to (car (cdr r))])
+             
+             (cond
+               [(<= l-from r-from r-to l-to) ; r in l
+                (cons (list l-from l-to) (scan-ranges
+                                          (remove (list l-from l-to)
+                                                  (remove (list r-from r-to) l))))]
+               [(<= r-from l-from l-to r-to) ; l in r
+                (cons (list r-from r-to) (scan-ranges
+                                          (remove (list l-from l-to)
+                                                  (remove (list r-from r-to) l))))]
+               [(<= l-from r-from l-to r-to) ; r overlaps
+                (cons (list l-from r-to) (scan-ranges
+                                          (remove (list l-from l-to)
+                                                  (remove (list r-from r-to)
+                                                          l))))]
+               [(<= r-from l-from r-to l-to) ; r overlaps  
+                (cons (list r-from l-to) (scan-ranges
+                                          (remove (list l-from l-to)
+                                                  (remove (list r-from r-to)
+                                                          l))))]
+               
+               [else (scan-next (cdr rs))]))))
+     
+     (scan-next (cdr l))]))
+
+(define (scan-ranges-2 l)
+  (if (empty? l)
+      empty
+      (let ([first-pass (scan-ranges l)])
+        (if (empty? first-pass)
+            empty
+            (cons (car first-pass) (scan-ranges-2 (cdr first-pass)))))))
+
+(define (merge-all ls)
+  (let* ([merge-ranges (λ (l) (scan-ranges-2 l))]
+         [merged-ls (merge-ranges ls)]
+         [merged-again-ls (merge-ranges merged-ls)])
+    
+    (if (equal? (length merged-ls) (length merged-again-ls))
+        merged-ls  ; can't merge any further
+        (merge-all merged-again-ls)))) ; merge ranges which overlap
+
+
+(define (count-ingredients-2 inp)
   (let* 
       ([good-ranges 
         (filter (negate empty?)
                 (for/list ([line inp])
                   (if (regexp-match "^[0-9]+-[0-9]+$" line)
                       (map (λ (n) (string->number n)) (regexp-split "-" line))
-                      empty)))])
+                      empty)))]
+       [reduced-ranges (merge-all good-ranges)])
 
-    (length
-     (remove-duplicates
-      (flatten
-       (for/list ([ran good-ranges])
-         (stream->list
-          (in-inclusive-range (car ran) (car (cdr ran))))))))))
+    (for/sum ([range reduced-ranges])
+      (add1 (- (last range) (car range))))))
 
 
-       
-(if (= 3 (count-ingredients-1 test-input))
-    (count-ingredients-1 input)
-    (error "wrong"))
-
-;(if (= 14 (count-ingredients-2 test-input))
-;    (count-ingredients-2 input)
-;    (error "wrong"))
+(check-equal? (count-ingredients-2 test-input) 14)
+(display "Part 2: ")
+(count-ingredients-2 input)
