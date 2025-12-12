@@ -1,3 +1,4 @@
+#!/usr/bin/env racket
 #lang racket
 
 (require 2htdp/batch-io rackunit)
@@ -7,12 +8,9 @@
                     "123 328  51 64 "
                     " 45 64  387 23 "
                     "  6 98  215 314"
-                    " *   +   *   + "))
-
-
+                    "*   +   *   +  "))
 
 (define input (read-lines "Day06_input.txt"))
-
 
 (define (problem-numbers inp)
   (matrix->list*  ; back to lists
@@ -80,15 +78,15 @@
 (define (process-all inp)
   (let* ([ls (for/list ([line inp])          ; read input as strings
                (string->bytes/locale line))] ; convert to byte-strings
-         [long-bytes (bytes-append* ls)] ; merge into one long pass
+         [long-bytes (bytes-append* ls)] ; merge into one long string of bytes
          [len (bytes-length (car ls))]) ; but keep length of individual line, will be needed as offset
     (let scan ([i 0])            ; start scanning from column 0
-      (let* ([result (proc-group long-bytes len i)]
-             [group-number (drop-right result 1)]
-             [new-idx (last result)])
+      (let* ([result (proc-group long-bytes len i)] ; decode group
+             [group-number (drop-right result 1)] ; split result  to number
+             [new-idx (last result)])             ; ... and index of next group
         (cond
-          [(> len new-idx) (cons group-number (scan new-idx))]
-          [else (cons group-number empty)])))))
+          [(> len new-idx) (cons group-number (scan new-idx))] 
+          [else (cons group-number empty)])))))  ; end of data
 
 (define (part-2 inp)
   (let* ([problems (process-all inp)]
