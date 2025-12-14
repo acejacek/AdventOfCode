@@ -1,5 +1,5 @@
 #lang racket
-(require racket/set 2htdp/batch-io rackunit)
+(require racket/set data/ddict 2htdp/batch-io rackunit)
 
 (define test-input (list
                     ".......S......."
@@ -75,3 +75,33 @@
 (check-equal? (part-1 test-input) 21)
 (display "Part 1: ")
 (part-1 input)
+
+
+(define (part-2 inp)
+  (let ([beam-start (cons (string-find (car inp) "S") 0)] ; (x . y)
+        [splitters (build-splitters inp)]
+        [width (string-length (car inp))]
+        [height (length inp)]
+        [cache (mutable-ddict (cons -1 -1) 0)]) ; ugly method to initiate cache (dictionary)
+    (let next-step ([beam beam-start])
+      (let ([x (car beam)]
+            [y (cdr beam)])
+        (+ ; sum up all possible ways
+         (cond
+           [(<= height y) 1] ; found way out of manifold
+           [(set-member? splitters beam) ; beam in splitter position
+            (cond
+              [(ddict-has-key? cache beam) (ddict-ref cache beam)] ; in the cache already
+              [else (ddict-set! cache beam ; add to cache for next time at this splitter
+                                (+ (if (< (add1 x) width) ; check borders, if split posible
+                                       (next-step (cons (add1 x) (add1 y)))
+                                       0)
+                                   (if (positive? x)
+                                       (next-step (cons (sub1 x) (add1 y)))
+                                       0)))
+                    (ddict-ref cache beam)])]
+           [else (next-step (cons x (add1 y)))])))))) ; no split, just descent
+
+(check-equal? (part-2 test-input) 40)
+(display "Part 2: ")
+(part-2 input)
