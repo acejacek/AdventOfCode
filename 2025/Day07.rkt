@@ -31,19 +31,20 @@
 (define (build-splitters inp)
   (list->set
    (append*
-    (filter (negate empty?) 
+    (filter (negate empty?) ; filter out all rows where there is no splitter
             (for/list ([line inp]
                        [y (in-naturals)])
-              (filter pair? (for/list ([element line]
-                                       [x (in-naturals)])
-                              (case element
-                                [(eq=? #\^) (cons x y)]))))))))
+              (filter pair? ; filter out all voids
+                      (for/list ([element line]
+                                 [x (in-naturals)])
+                        (case element
+                          [(eq=? #\^) (cons x y)]))))))))
       
 (define (part-1 inp)
-  (let* ([beams (build-beams inp)]
-         [splitters (build-splitters inp)]
-         [width (string-length (car inp))]
-         [height (length inp)])
+  (let ([beams (build-beams inp)]
+        [splitters (build-splitters inp)]
+        [width (string-length (car inp))]
+        [height (length inp)])
     
     (let next-step ([beams beams]
                     [sum 0]
@@ -52,8 +53,8 @@
       (let ([splits-in-iteration
              (for/fold([splits-count 0])
                       ([beam beams])
-               (let* ([x (car beam)]
-                      [y (cdr beam)])
+               (let ([x (car beam)]
+                     [y (cdr beam)])
                  (cond
                    [(<= height y) splits-count] ; out of bounds
                    [(set-member? splitters beam) ; beam in splitter position
@@ -68,7 +69,7 @@
                    [else (set-add! new-beams (cons x (add1 y))) ; no split, just descent
                          splits-count])))])
         (if (set-empty? new-beams)
-            sum  ; no beams? all exit the manifold, show sum
+            sum  ; no beams? all exited the manifold, show sum
             (next-step new-beams (+ sum splits-in-iteration) (set-copy-clear new-beams)))))))
 
 (check-equal? (part-1 test-input) 21)
